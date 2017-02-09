@@ -73,11 +73,49 @@ def cost_distance(u, v):
     i = int(float(math.sqrt((a**2) + (b ** 2)))*100000)
     return i
 
+def least_cost_path (graph, start, dest):
+    """Find and return a least cost path in graph from start vertex to dest vertex.
+    Efficiency: If E is the number of edges, the run-time is
+      O( E log(E) ).
+    Args:
+      graph (Graph): The digraph defining the edges between the
+        vertices.
+      start: The vertex where the path starts. It is assumed
+        that start is a vertex of graph.
+      dest:  The vertex where the path ends. It is assumed
+        that start is a vertex of graph.
+      cost:  A function, taking the two vertices of an edge as
+        parameters and returning the cost of the edge. For its
+        interface, see the definition of cost_distance.
+    Returns:
+      list: A potentially empty list (if no path can be found) of
+        the vertices in the graph. If there was a path, the first
+        vertex is always start, the last is always dest in the list.
+        Any two consecutive vertices correspond to some
+        edge in graph.
+    """
+    #Setup the minheap
+    heap = MinHeap()
+    for e in graph.edges:
+         heap.add(e, cost(e[0],e[1]))
+    print(heap.pop_min())
 
 
 
+    # reached = {}
+    # runners = { cost_distance(lat_lon(start, dest)), start, dest) }
+    # while runners:
+    #    extract (time, goal, start) with minimum time from runners
 
+    #    if goal in reached
+    #       continue        (ignore this runner and restart the loop)
+    #    reached[goal] = (start, time)
+    #    for each succ in goal
+    #       add runner (time + cost(goal, succ), succ, goal) to runners
+    #          (this new runner will reach succ at the given time)
+    # return reached
 
+    return None
 
 if __name__ == "__main__":
     graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
