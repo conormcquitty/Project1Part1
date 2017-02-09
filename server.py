@@ -1,5 +1,8 @@
 from adjacencygraph import AdjacencyGraph as Graph
 import csv
+import math
+
+lat_lon = dict()
 
 def read_city_graph(city_graph):
     ''' Turns a comma seperated list into an AdjacencyGraph
@@ -34,7 +37,6 @@ def read_city_graph(city_graph):
     for i in range(len(rows)):
         if rows[i] == 'V':
             vertices.append(int(rows[i+1]))
-
             lat_lon[int(rows[i+1])] = ((int(float(rows[i+2])*100000)),(int(float(rows[i+3])*100000)))
         if rows[i] == 'E':
             edges.append((int(rows[i+1]), int(rows[i+2])))
@@ -51,5 +53,33 @@ def read_city_graph(city_graph):
             g.add_edge(e)
     return g, lat_lon, street_name
 
+
+def cost_distance(u, v):
+    '''Computes and returns the straight-line distance between the two vertices u and v.
+
+    Args:
+        u, v: The ids for two vertices that are the start and
+        end of a valid edge in the graph.
+
+    Returns:
+        numeric value: the distance between the two vertices.
+    '''
+
+    #finds the difference between the x & y coordinates to give us one x coordinate and one y coordinate
+    a = ((lat_lon[u])[0]) - ((lat_lon[v])[0])
+    b = ((lat_lon[u])[1]) - ((lat_lon[v])[1])
+
+    #calculates the pythagoran distance between the 2 points
+    i = int(float(math.sqrt((a**2) + (b ** 2)))*100000)
+    return i
+
+
+
+
+
+
+
 if __name__ == "__main__":
     graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
+    a = cost_distance(29577354,29770958)
+    print(a)
