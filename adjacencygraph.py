@@ -1,3 +1,7 @@
+'''Last change: 9:10am Jan 28, 2017. add_edge implements additional checks.
+'''
+
+
 class AdjacencyGraph:
     '''Type to represent directed graphs using adjacency storage.
 
