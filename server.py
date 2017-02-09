@@ -1,15 +1,15 @@
-import Graph from digraph
-
+from adjacencygraph import AdjacencyGraph as Graph
+import csv
 
 def read_city_graph(city_graph):
-    ''' Turns a comma seperated list into an UndirectedAdjacencyGraph
+    ''' Turns a comma seperated list into an AdjacencyGraph
 
     Args:
         city_graph: filename with extension .csv that exists
         in the same directory
 
     Returns:
-        g: an UndirectedAdjacencyGraph
+        g: an AdjacencyGraph
     '''
 
     #Read file into a list of tokens from the file.
@@ -42,10 +42,5 @@ def read_city_graph(city_graph):
             g.add_edge(e)
     return g
 
-def main():
-
-
-
-
 if __name__ == "__main__":
-    main()
+    
