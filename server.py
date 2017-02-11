@@ -1,6 +1,7 @@
 from adjacencygraph import AdjacencyGraph as Graph
 import csv
 import math
+from minheap import MinHeap
 
 lat_lon = dict()
 
@@ -32,8 +33,10 @@ def read_city_graph(city_graph):
     #Parse which lines include data about a vertice and
     #which lines include data about an edge.
     #Create two lists of vertices and edges.
-    #Creates the dictionary lat_lon, where the vertice number is the key and the latitude and longitude are attched to the key
-    #Creates the dictionary street_name, where the edge start and end points tuple is the key, and the street name is attached to the key
+    #Creates the dictionary lat_lon, where the vertice number is the key and
+    #the latitude and longitude are attched to the key
+    #Creates the dictionary street_name, where the edge start and end
+    # points tuple is the key, and the street name is attached to the key
     for i in range(len(rows)):
         if rows[i] == 'V':
             vertices.append(int(rows[i+1]))
@@ -70,7 +73,7 @@ def cost_distance(u, v):
     b = ((lat_lon[u])[1]) - ((lat_lon[v])[1])
 
     #calculates the pythagoran distance between the 2 points
-    i = int(float(math.sqrt((a**2) + (b ** 2)))*100000)
+    i = int(float(math.sqrt( (a ** 2) + (b ** 2))) * 100000)
     return i
 
 def least_cost_path (graph, start, dest):
@@ -94,30 +97,41 @@ def least_cost_path (graph, start, dest):
         Any two consecutive vertices correspond to some
         edge in graph.
     """
+# *** @TODO RuntimeError: if start or dest not in vertex
+
+#     if not graph.is_vertex(start):
+#         raise RuntimeError("{},{} is not in Edmonton", lat_lon[])
+
     #Setup the minheap
-    heap = MinHeap()
-    for e in graph.edges:
-         heap.add(e, cost(e[0],e[1]))
-    print(heap.pop_min())
+    reached = list()
+    runners = MinHeap()
+    #Runner is organized in minheap based upon the time, but the key
+    #pertains to its event. (time_arrive, v_to, v_next). First
+    #runner has zero time_arrive and goes from itself to itself.
+    runners.add(0,(0,start,start))
+    while dest not in reached:
+        #take the next node with the smallest distance to reach off the heap
+        (key, curr_runner) = runners.pop_min()
+        (w_cumulative, v_from, v_to) = curr_runner
 
+        #if v_to has already been reached, restart and pop the next minimum
+        if v_to in reached:
+            continue
 
+        #append v_to to reached because it has just been reached
+        reached.append(v_to)
 
-    # reached = {}
-    # runners = { cost_distance(lat_lon(start, dest)), start, dest) }
-    # while runners:
-    #    extract (time, goal, start) with minimum time from runners
+        for v_next in graph.neighbours(v_to):
+            #compute the cost distance of going from the v_to (the currently
+            #reached vertice) to all of its neighbours and add runners to the heap
+            #that correspond to the neighbour vertices.
+            w = w_cumulative + cost_distance(v_to, v_next)
+            runners.add(w,(w, v_to, v_next))
 
-    #    if goal in reached
-    #       continue        (ignore this runner and restart the loop)
-    #    reached[goal] = (start, time)
-    #    for each succ in goal
-    #       add runner (time + cost(goal, succ), succ, goal) to runners
-    #          (this new runner will reach succ at the given time)
-    # return reached
-
-    return None
+    #based upon the order that things are appended to the reached list, the
+    #list will already be in the correct order of vertices
+    return reached
 
 if __name__ == "__main__":
     graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
-    a = cost_distance(29577354,29770958)
-    print(a)
+    print(least_cost_path(graph, 283843737, 1496712750))
