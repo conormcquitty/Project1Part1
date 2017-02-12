@@ -1,7 +1,75 @@
 from adjacencygraph import AdjacencyGraph as Graph
 import csv
 import math
-from minheap import MinHeap
+
+class MinHeap:
+
+    def __init__(self):
+        self._array = []
+
+    def add(self, key, value):
+        self._array.append((key, value))
+        self.fix_heap_up(len(self._array)-1)
+
+    def pop_min(self):
+        if not self._array:
+            raise RuntimeError("Attempt to call pop_min on empty heap")
+        retval = self._array[0]
+        self._array[0] = self._array[-1]
+        del self._array[-1]
+        if self._array:
+            self.fix_heap_down(0)
+        return retval
+
+    def fix_heap_up(self, i):
+        if self.isroot(i):
+            return
+        p = self.parent(i)
+        if self._array[i][0] < self._array[p][0]:
+            self.swap(i, p)
+            self.fix_heap_up(p)
+
+    def swap(self, i, j):
+        self._array[i], self._array[j] = \
+            self._array[j], self._array[i]
+
+    def isroot(self, i):
+        return i == 0
+
+    def isleaf(self, i):
+        return self.lchild(i) >= len(self._array)
+
+    def lchild(self, i):
+        return 2*i+1
+
+    def rchild(self, i):
+        return 2*i+2
+
+    def parent(self, i):
+        return (i-1)//2
+
+    def min_child_index(self, i):
+        l = self.lchild(i)
+        r = self.rchild(i)
+        retval = l
+        if r < len(self._array) and self._array[r][0] < self._array[l][0]:
+            retval = r
+        return retval
+
+    def isempty(self):
+        return len(self._array) == 0
+
+    def length(self):
+        return len(self._array)
+
+    def fix_heap_down(self, i):
+        if self.isleaf(i):
+            return
+
+        j = self.min_child_index(i)
+        if self._array[i][0] > self._array[j][0]:
+            self.swap(i, j)
+            self.fix_heap_down(j)
 
 lat_lon = dict()
 
@@ -72,7 +140,7 @@ def cost_distance(u, v):
     b = abs((lat_lon[u])[1]) - abs((lat_lon[v])[1])
 
     #calculates the pythagoran distance between the 2 points
-    i = int(math.sqrt( (a ** 2) + (b ** 2)))
+    i = math.sqrt( (a ** 2) + (b ** 2))
     return i
 
 def least_cost_path (graph, start, dest, cost):
@@ -173,7 +241,7 @@ if __name__ == "__main__":
         end = find_vertice(graph, d_lat, d_lon)
         #find the shortest path
         path = least_cost_path(graph, start, end, cost)
-        print(path)
+
         #start route
         count = len(path)
         instr_num = 0
@@ -185,5 +253,5 @@ if __name__ == "__main__":
                 print("W", lat_lon[path[instr_num]])
             instr_num += 1
 
-        if input().split() == 'A':
+        if input().strip() == 'A':
             print("E")
