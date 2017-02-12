@@ -158,14 +158,32 @@ def find_vertice(graph, lat, lon):
 
 if __name__ == "__main__":
     graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
+    #define cost for server
     cost = lambda u,v: cost_distance(u, v)
-    # print(least_cost_path(graph, 29770958, 30198540, cost))
 
-    line = input().strip().split()
-    if line[0] == 'R':
-        s_lat, s_lon = int(line[1]), int(line[2])
-        d_lat, d_lon = int(line[3]), int(line[4])
+    #take input from stdin latitude and longtitude
+    while True:
+        line = input().strip().split()
+        #if its the right format, continue
+        if line[0] == 'R':
+            s_lat, s_lon = int(line[1]), int(line[2])
+            d_lat, d_lon = int(line[3]), int(line[4])
+        #find the closest start and destination vertices
+        start = find_vertice(graph, s_lat, s_lon)
+        end = find_vertice(graph, d_lat, d_lon)
+        #find the shortest path
+        path = least_cost_path(graph, start, end, cost)
+        print(path)
+        #start route
+        count = len(path)
+        instr_num = 0
+        print("N", count)
 
-    start_vertice = find_vertice(graph, s_lat, s_lon)
-    end_vertice = find_vertice(graph, d_lat, d_lon)
-    # print(start_vertice)
+        while instr_num != count:
+            ard = input().split()
+            if ard[0] == 'A':
+                print("W", lat_lon[path[instr_num]])
+            instr_num += 1
+
+        if input().split() == 'A':
+            print("E")
