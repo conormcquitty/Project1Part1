@@ -28,7 +28,6 @@ def read_city_graph(city_graph):
 
     vertices = []
     edges = []
-    lat_lon = dict()
     street_name = dict()
     #Parse which lines include data about a vertice and
     #which lines include data about an edge.
@@ -69,14 +68,14 @@ def cost_distance(u, v):
     '''
 
     #finds the difference between the x & y coordinates to give us one x coordinate and one y coordinate
-    a = ((lat_lon[u])[0]) - ((lat_lon[v])[0])
-    b = ((lat_lon[u])[1]) - ((lat_lon[v])[1])
+    a = abs((lat_lon[u])[0]) - abs((lat_lon[v])[0])
+    b = abs((lat_lon[u])[1]) - abs((lat_lon[v])[1])
 
     #calculates the pythagoran distance between the 2 points
-    i = int(float(math.sqrt( (a ** 2) + (b ** 2))) * 100000)
+    i = int(math.sqrt( (a ** 2) + (b ** 2)))
     return i
 
-def least_cost_path (graph, start, dest):
+def least_cost_path (graph, start, dest, cost):
     """Find and return a least cost path in graph from start vertex to dest vertex.
     Efficiency: If E is the number of edges, the run-time is
       O( E log(E) ).
@@ -97,10 +96,6 @@ def least_cost_path (graph, start, dest):
         Any two consecutive vertices correspond to some
         edge in graph.
     """
-# *** @TODO RuntimeError: if start or dest not in vertex
-
-#     if not graph.is_vertex(start):
-#         raise RuntimeError("{},{} is not in Edmonton", lat_lon[])
 
     #Setup the minheap
     reached = list()
@@ -125,13 +120,52 @@ def least_cost_path (graph, start, dest):
             #compute the cost distance of going from the v_to (the currently
             #reached vertice) to all of its neighbours and add runners to the heap
             #that correspond to the neighbour vertices.
-            w = w_cumulative + cost_distance(v_to, v_next)
+            #***Edit cost to be cost_distance of vertices for the implementation***
+            # w = w_cumulative + cost_distance(v_to, v_next)
+            w = w_cumulative + cost(v_to, v_next)
             runners.add(w,(w, v_to, v_next))
 
     #based upon the order that things are appended to the reached list, the
     #list will already be in the correct order of vertices
     return reached
 
+def find_vertice(graph, lat, lon):
+    """Finds and returns the cloesest vertices to the given latitude and longitude
+    Args:
+        lat: latitude expressed as an integer in 100-000ths
+         of a degree
+        lon: longitude expressed as an integer in 100-000ths
+         of a degree
+    Returns:
+        vertice: A vertice in the graph of the city that is
+        closest to the requested latitude and longitude in
+        terms of Euclidean distances
+    """
+    #Add a vertice to lat_lon so cost_distance can be reused to calculate
+    #Euclidean distance give to vertices. 0 is an arbitrary value
+    lat_lon[0]= (lat, lon)
+    heap = MinHeap()
+    #Add to the minheap sorting on the cost_distance between vertices.
+    #The vertice is the value associated with the cost_distance in the
+    #minheap
+    for v in lat_lon.keys():
+        if v != 0:
+            heap.add(cost_distance(0, v), v)
+    #pop the minimum Euclidean distance and return only the vertice
+    #associated with the value
+    return heap.pop_min()[1]
+
+
 if __name__ == "__main__":
     graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
-    print(least_cost_path(graph, 283843737, 1496712750))
+    cost = lambda u,v: cost_distance(u, v)
+    # print(least_cost_path(graph, 29770958, 30198540, cost))
+
+    line = input().strip().split()
+    if line[0] == 'R':
+        s_lat, s_lon = int(line[1]), int(line[2])
+        d_lat, d_lon = int(line[3]), int(line[4])
+
+    start_vertice = find_vertice(graph, s_lat, s_lon)
+    end_vertice = find_vertice(graph, d_lat, d_lon)
+    # print(start_vertice)
