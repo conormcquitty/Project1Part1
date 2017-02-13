@@ -166,36 +166,54 @@ def least_cost_path (graph, start, dest, cost):
     """
 
     #Setup the minheap
-    reached = list()
+    reached = set()
+    next_v = dict()
     runners = MinHeap()
     #Runner is organized in minheap based upon the time, but the key
     #pertains to its event. (time_arrive, v_to, v_next). First
     #runner has zero time_arrive and goes from itself to itself.
     runners.add(0,(0,start,start))
-    while dest not in reached:
+    while not runners.isempty():
+        if dest in reached:
+            break
         #take the next node with the smallest distance to reach off the heap
         (key, curr_runner) = runners.pop_min()
         (w_cumulative, v_from, v_to) = curr_runner
-
+        # print("v_from, v_to, w_cum:", v_from, v_to, w_cumulative)
         #if v_to has already been reached, restart and pop the next minimum
         if v_to in reached:
+            # print("v_to already in reached")
             continue
 
         #append v_to to reached because it has just been reached
-        reached.append(v_to)
+        reached.add(v_to)
+        # print("add", v_to)
+        next_v[v_to] = v_from
 
-        for v_next in graph.neighbours(v_to):
+        for v in graph.neighbours(v_to):
             #compute the cost distance of going from the v_to (the currently
             #reached vertice) to all of its neighbours and add runners to the heap
             #that correspond to the neighbour vertices.
             #***Edit cost to be cost_distance of vertices for the implementation***
             # w = w_cumulative + cost_distance(v_to, v_next)
-            w = w_cumulative + cost(v_to, v_next)
-            runners.add(w,(w, v_to, v_next))
+            w = w_cumulative + cost(v_to, v)
+            runners.add(w, (w, v_to, v))
 
+    # print(next_v)
+    path = list()
+    vert = dest
+    path.append(dest)
+    if dest not in reached:
+        return []
+    else:
+        while start not in path:
+            path.append(next_v[vert])
+            vert = next_v[vert]
     #based upon the order that things are appended to the reached list, the
     #list will already be in the correct order of vertices
-    return reached
+
+
+    return list(reversed(path))
 
 def find_vertice(graph, lat, lon):
     """Finds and returns the cloesest vertices to the given latitude and longitude
