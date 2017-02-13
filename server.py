@@ -248,35 +248,37 @@ if __name__ == "__main__":
     #define cost for server
     cost = lambda u,v: cost_distance(u, v)
 
-    #take input from stdin latitude and longtitude
-    while True:
-        line = input().strip().split()
-        #if its the right format, continue
-        if line[0] == 'R':
-            #from input take the start and end coordinates
-            s_lat, s_lon = int(line[1]), int(line[2])
-            d_lat, d_lon = int(line[3]), int(line[4])
-            #find the closest start and destination vertices
-            start = find_vertice(graph, s_lat, s_lon)
-            end = find_vertice(graph, d_lat, d_lon)
-            #find the shortest path
-            path = least_cost_path(graph, start, end, cost)
+    #Take input from stdin latitude and longtitude
+    #Uncomment this while true to process more than one request
+    #This while loop has been taken out for testing with the TestCentre
+    # while True:
+    line = input().split()
+    #if its the right format, continue
+    if line[0] == 'R':
+        #from input take the start and end coordinates
+        s_lat, s_lon = int(line[1]), int(line[2])
+        d_lat, d_lon = int(line[3]), int(line[4])
+        #find the closest start and destination vertices
+        start = find_vertice(graph, s_lat, s_lon)
+        end = find_vertice(graph, d_lat, d_lon)
+        #find the shortest path
+        path = least_cost_path(graph, start, end, cost)
 
-            #start route
-            count = len(path)
-            #start instruction counter
-            instr_num = 0
-            print("N", count)
-            while instr_num != count:
+        #start route
+        count = len(path)
+        #start instruction counter
+        instr_num = 0
+        print("N", count)
+        while instr_num != count:
+            ard = input().strip()
+            #while arduino has not responded to waypoint with proper query
+            #take inputs until 'A' has been returned by the stdin/ardiuno
+            while ard[0] != 'A':
                 ard = input().strip()
-                #while arduino has not responded to waypoint with proper query
-                #take inputs until 'A' has been returned by the stdin/ardiuno
-                while ard[0] != 'A':
-                    ard = input().strip()
-                #print the waypoint
-                print("W", lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1])
-                #increment the counter
-                instr_num += 1
-            #once
-            if input().strip() == 'A':
-                print("E")
+            #print the waypoint
+            print("W", lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1])
+            #increment the counter
+            instr_num += 1
+        #once
+        if input().strip() == 'A':
+            print("E")
