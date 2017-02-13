@@ -255,21 +255,22 @@ if __name__ == "__main__":
             s_lat, s_lon = int(line[1]), int(line[2])
             d_lat, d_lon = int(line[3]), int(line[4])
         #find the closest start and destination vertices
-        start = find_vertice(graph, s_lat, s_lon)
-        end = find_vertice(graph, d_lat, d_lon)
-        #find the shortest path
-        path = least_cost_path(graph, start, end, cost)
+            start = find_vertice(graph, s_lat, s_lon)
+            end = find_vertice(graph, d_lat, d_lon)
+            #find the shortest path
+            path = least_cost_path(graph, start, end, cost)
 
-        #start route
-        count = len(path)
-        instr_num = 0
-        print("N", count)
+            #start route
+            count = len(path)
+            instr_num = 0
+            print("N", count)
 
-        while instr_num != count:
-            ard = input().split()
-            if ard[0] == 'A':
-                print("W", lat_lon[path[instr_num]])
-            instr_num += 1
+            while instr_num != count:
+                ard = input().strip()
+                while ard[0] != 'A':
+                    ard = input().strip()
+                print("W", lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1])
+                instr_num += 1
 
-        if input().strip() == 'A':
-            print("E")
+            if input().strip() == 'A':
+                print("E")
