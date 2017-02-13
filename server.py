@@ -165,15 +165,17 @@ def least_cost_path (graph, start, dest, cost):
         edge in graph.
     """
 
-    #Setup the minheap
+    #Set to keep track of all the reached vertices
     reached = set()
-    next_v = dict()
+    #Dictionary to keep frack of how you got to the current vertice
+    prev_v = dict()
     runners = MinHeap()
-    #Runner is organized in minheap based upon the time, but the key
-    #pertains to its event. (time_arrive, v_to, v_next). First
-    #runner has zero time_arrive and goes from itself to itself.
+    #Runner is organized in minheap based upon the cost_distance, but the value
+    #pertains to its event. (cost_distance, v_from, v_to)
+    #First runner has zero time_arrive and goes from itself to itself.
     runners.add(0,(0,start,start))
     while not runners.isempty():
+        #if we've found the destination, break
         if dest in reached:
             break
         #take the next node with the smallest distance to reach off the heap
@@ -182,37 +184,36 @@ def least_cost_path (graph, start, dest, cost):
         # print("v_from, v_to, w_cum:", v_from, v_to, w_cumulative)
         #if v_to has already been reached, restart and pop the next minimum
         if v_to in reached:
-            # print("v_to already in reached")
             continue
 
         #append v_to to reached because it has just been reached
         reached.add(v_to)
-        # print("add", v_to)
-        next_v[v_to] = v_from
+        #append to the dictionary how you just got to this node
+        prev_v[v_to] = v_from
 
-        for v in graph.neighbours(v_to):
+        for next_vertices in graph.neighbours(v_to):
             #compute the cost distance of going from the v_to (the currently
             #reached vertice) to all of its neighbours and add runners to the heap
             #that correspond to the neighbour vertices.
             #***Edit cost to be cost_distance of vertices for the implementation***
             # w = w_cumulative + cost_distance(v_to, v_next)
-            w = w_cumulative + cost(v_to, v)
-            runners.add(w, (w, v_to, v))
-
-    # print(next_v)
+            w = w_cumulative + cost(v_to, next_vertices)
+            runners.add(w, (w, v_to, next_vertices))
+    #initiate a path list that we can load the ordered path into
     path = list()
-    vert = dest
-    path.append(dest)
+    vertice = dest
+    #if the destination wasn't found, return the empty path list
     if dest not in reached:
-        return []
+        return path
+    #If it is found, start to add elements into path. Because we have to walk
+    #backwards through the list based on the key organization of the prev_v dict,
+    #elements are added in reversed order (ie. goes from dest->start)
     else:
+        path.append(dest)
         while start not in path:
-            path.append(next_v[vert])
-            vert = next_v[vert]
-    #based upon the order that things are appended to the reached list, the
-    #list will already be in the correct order of vertices
-
-
+            path.append(prev_v[vertice])
+            vert = prev_v[vertice]
+    #return the reversed path so it goes (start->dest)
     return list(reversed(path))
 
 def find_vertice(graph, lat, lon):
@@ -252,9 +253,10 @@ if __name__ == "__main__":
         line = input().strip().split()
         #if its the right format, continue
         if line[0] == 'R':
+            #from input take the start and end coordinates
             s_lat, s_lon = int(line[1]), int(line[2])
             d_lat, d_lon = int(line[3]), int(line[4])
-        #find the closest start and destination vertices
+            #find the closest start and destination vertices
             start = find_vertice(graph, s_lat, s_lon)
             end = find_vertice(graph, d_lat, d_lon)
             #find the shortest path
@@ -262,15 +264,19 @@ if __name__ == "__main__":
 
             #start route
             count = len(path)
+            #start instruction counter
             instr_num = 0
             print("N", count)
-
             while instr_num != count:
                 ard = input().strip()
+                #while arduino has not responded to waypoint with proper query
+                #take inputs until 'A' has been returned by the stdin/ardiuno
                 while ard[0] != 'A':
                     ard = input().strip()
+                #print the waypoint
                 print("W", lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1])
+                #increment the counter
                 instr_num += 1
-
+            #once
             if input().strip() == 'A':
                 print("E")
