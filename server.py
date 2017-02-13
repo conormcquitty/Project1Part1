@@ -212,7 +212,7 @@ def least_cost_path (graph, start, dest, cost):
         path.append(dest)
         while start not in path:
             path.append(prev_v[vertice])
-            vert = prev_v[vertice]
+            vertice = prev_v[vertice]
     #return the reversed path so it goes (start->dest)
     return list(reversed(path))
 
