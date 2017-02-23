@@ -1,6 +1,10 @@
 from adjacencygraph import AdjacencyGraph as Graph
 import csv
 import math
+import textserial
+import sys
+import argparse
+from cs_message import *
 
 class MinHeap:
 
@@ -134,8 +138,9 @@ def cost_distance(u, v):
     Returns:
         numeric value: the distance between the two vertices.
     '''
+    #@TODO: Apparently the abs() function makes the cost function calculation
+    #wrong. Redo this algorithm (should be a small change)
 
-    #finds the difference between the x & y coordinates to give us one x coordinate and one y coordinate
     a = abs((lat_lon[u])[0]) - abs((lat_lon[v])[0])
     b = abs((lat_lon[u])[1]) - abs((lat_lon[v])[1])
 
@@ -228,6 +233,8 @@ def find_vertice(graph, lat, lon):
         closest to the requested latitude and longitude in
         terms of Euclidean distances
     """
+    #@TODO: Inefficient algorithm, must revisit
+
     #Add a vertice to lat_lon so cost_distance can be reused to calculate
     #Euclidean distance give to vertices. 0 is an arbitrary value
     lat_lon[0]= (lat, lon)
@@ -243,21 +250,32 @@ def find_vertice(graph, lat, lon):
     return heap.pop_min()[1]
 
 
-if __name__ == "__main__":
-    graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
+def protocol(serial_in, serial_out):
+"""
+The server protocol that runs idefinitely.
+"""
+    #@TODO: no testing done. Testing must be done on this function to make sure
+    #that it is properly communicating. 
+
     #define cost for server
     cost = lambda u,v: cost_distance(u, v)
 
-    #Take input from stdin latitude and longtitude
-    #Uncomment this while true to process more than one request
-    #This while loop has been taken out for testing with the TestCentre
-    # while True:
-    line = input().split()
-    #if its the right format, continue
-    if line[0] == 'R':
-        #from input take the start and end coordinates
+    #Take input from Arduino through the serialPort
+    #and using cs_messagewhile True:
+    while True:
+        while True:
+            msg = receive_msg_from_client(serial_in)
+            if msg[0] == "R":
+                break
+        #Break the coordinates into their own list
+        coords = msg[2:].split()
+        #Check for proper format
+        if len(coords) != 4:
+            continue
+        #Convert to integers
         s_lat, s_lon = int(line[1]), int(line[2])
         d_lat, d_lon = int(line[3]), int(line[4])
+
         #find the closest start and destination vertices
         start = find_vertice(graph, s_lat, s_lon)
         end = find_vertice(graph, d_lat, d_lon)
@@ -268,17 +286,47 @@ if __name__ == "__main__":
         count = len(path)
         #start instruction counter
         instr_num = 0
-        print("N", count)
+        send_msg_to_client(serial_out, "N {}" .format(count))
         while instr_num != count:
-            ard = input().strip()
+            msg = receive_msg_from_client(serial_in)
             #while arduino has not responded to waypoint with proper query
-            #take inputs until 'A' has been returned by the stdin/ardiuno
-            while ard[0] != 'A':
-                ard = input().strip()
+            #@TODO: Consider taking this out and assuming proper format
+            #from the arduino
+            while msg != "A":
+                msg = receive_msg_from_client(serial_in)
             #print the waypoint
-            print("W", lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1])
+            send_msg_to_client(serial_out, "W {} {}"\
+            .format(lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1]))
             #increment the counter
             instr_num += 1
-        #once
-        if input().strip() == 'A':
-            print("E")
+        #@BUG: This algorithm design makes it print 'E' even when there is
+        #no path to be found
+        if receive_msg_from_client(serial_in) == 'A':
+            send_msg_to_client(serial_out, "E")
+
+
+
+def main():
+    graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
+
+    serial_port_name = '/dev/ttyACM0'
+    log_msg("Opening serial port: {}".format(serial_port_name))
+
+    # Open up the connection
+
+    baudrate = 9600  # [bit/seconds] 115200 also works
+
+    # Run the server protocol forever
+
+    # The with statment ensures that if things go bad, then ser
+    # will still be closed properly.
+    # errors='ignore' allows any 1 byte character, not just the usual
+    # ascii range [0,127]
+
+    with textserial.TextSerial(
+        serial_port_name, baudrate, errors='ignore', newline=None) as ser:
+        protocol(ser, ser)
+
+
+if __name__ == "__main__":
+    main()
