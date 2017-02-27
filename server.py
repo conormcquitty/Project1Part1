@@ -280,7 +280,7 @@ def protocol(serial_in, serial_out):
         # log_msg("{}".format(coords))
         s_lat, s_lon = int(coords[0]), int(coords[1])
         d_lat, d_lon = int(coords[2]), int(coords[3])
-        log_msg(" {} {} {} {}". format(s_lat, s_lon, d_lat, d_lon))
+        # log_msg(" {} {} {} {}". format(s_lat, s_lon, d_lat, d_lon))
         #find the closest start and destination vertices
         start = find_vertice(graph, s_lat, s_lon)
         end = find_vertice(graph, d_lat, d_lon)

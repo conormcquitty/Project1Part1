@@ -27,12 +27,11 @@ the length of the path, -1 if an error occurred
 
 */
 int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
-  """
-  THIS FUNCTION HERE IS VERY BROKEN AND I'VE TRIED VERY HARD TO FIX IT. 
-  """
   int16_t path_len;
-  char* buf;
-  int16_t number;
+  int16_t buf_size = 100;
+  char buf[buf_size];
+  char number[buf_size];
+  uint16_t buf_len;
 
   // start the server communication with a path request
   dprintf("Requesting lat %ld lon %ld to lat %ld lon %ld",
@@ -46,15 +45,15 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
 
   while (Serial.available() == 0){;}
 
-  serial_readline(buf, 1000);
-  // if (buf[0] == 'N' && buf[1] == ' '){
-    // dprintf("buf conditions met");
-    //Copy number in buf into another string
-  sscanf(buf, "%*c %d", &number);
-  dprintf("number: %d", number);
-  path_len = number;
-  // }
-  dprintf("Got path_len of %d", path_len);
+  buf_len = serial_readline(buf, 100);
+  dprintf("buf len: %d", buf_len);
+  if (buf[0] == 'N' && buf [1] == ' '){
+    dprintf("buffer requirements met");
+    for (int i; i < buf_len-2; ++i){
+      number[i] = buf[i+2];
+    }
+    path_len = string_get_int(number);
+  }
 
   // now you will expect to get a N dddddd message back from server
   return path_len;
