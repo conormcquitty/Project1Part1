@@ -141,10 +141,10 @@ def cost_distance(u, v):
     #@TODO: Apparently the abs() function makes the cost function calculation
     #wrong. Redo this algorithm (should be a small change)
 
-    a = abs((lat_lon[u])[0]) - abs((lat_lon[v])[0])
-    b = abs((lat_lon[u])[1]) - abs((lat_lon[v])[1])
+    a = (lat_lon[u])[0] - (lat_lon[v])[0]
+    b = (lat_lon[u])[1] - (lat_lon[v])[1]
 
-    #calculates the pythagoran distance between the 2 points
+    #calculates the pythagorean distance between the 2 points
     i = math.sqrt( (a ** 2) + (b ** 2))
     return i
 
@@ -251,37 +251,42 @@ def find_vertice(graph, lat, lon):
 
 
 def protocol(serial_in, serial_out):
-"""
-The server protocol that runs idefinitely.
-"""
+    """
+    The server protocol that runs idefinitely.
+    """
+
     #@TODO: no testing done. Testing must be done on this function to make sure
-    #that it is properly communicating. 
+    #that it is properly communicating.
+
+    graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
 
     #define cost for server
     cost = lambda u,v: cost_distance(u, v)
 
     #Take input from Arduino through the serialPort
-    #and using cs_messagewhile True:
+    #and using cs_message
     while True:
         while True:
             msg = receive_msg_from_client(serial_in)
             if msg[0] == "R":
                 break
         #Break the coordinates into their own list
+
         coords = msg[2:].split()
         #Check for proper format
         if len(coords) != 4:
             continue
         #Convert to integers
-        s_lat, s_lon = int(line[1]), int(line[2])
-        d_lat, d_lon = int(line[3]), int(line[4])
-
+        # log_msg("{}".format(coords))
+        s_lat, s_lon = int(coords[0]), int(coords[1])
+        d_lat, d_lon = int(coords[2]), int(coords[3])
+        log_msg(" {} {} {} {}". format(s_lat, s_lon, d_lat, d_lon))
         #find the closest start and destination vertices
         start = find_vertice(graph, s_lat, s_lon)
         end = find_vertice(graph, d_lat, d_lon)
         #find the shortest path
         path = least_cost_path(graph, start, end, cost)
-
+        # print("PATH: ", path)
         #start route
         count = len(path)
         #start instruction counter
@@ -307,7 +312,6 @@ The server protocol that runs idefinitely.
 
 
 def main():
-    graph, lat_lon, street_name = read_city_graph("edmonton-roads-2.0.1.txt")
 
     serial_port_name = '/dev/ttyACM0'
     log_msg("Opening serial port: {}".format(serial_port_name))
