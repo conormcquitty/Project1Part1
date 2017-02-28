@@ -29,38 +29,44 @@ the length of the path, -1 if an error occurred
 int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   int16_t path_len;
   int16_t buf_size = 100;
-  char buf[buf_size];
+  char path_len_from_server[buf_size];
   uint16_t buf_len;
 
   // start the server communication with a path request
   dprintf("Requesting lat %ld lon %ld to lat %ld lon %ld",
   start.lat, start.lon, end.lat, end.lon);
 
+  //Send request to the server
   Serial.print("R ");
   Serial.print(start.lat); Serial.print(" ");
   Serial.print(start.lon); Serial.print(" ");
   Serial.print(end.lat); Serial.print(" ");
   Serial.print(end.lon), Serial.println("");
 
+  //Check for timeout on recieving path from the server.(ERROR)
   int start_time = millis();
-
   while (Serial.available() == 0){;}
-
   if (start_time + 10000 < millis()){
     dprintf("WAITING FOR PATH TIMEOUT");
     return -1;
   }
 
-  buf_len = serial_readline(buf, 100);
+  // Read into buffer path_len_from_server
+  buf_len = serial_readline(path_len_from_server, 100);
+  //buffer for holding the number string.
   char number[buf_len-2];
-  if (buf[0] == 'N' && buf [1] == ' '){
+  // If path_len_from_server is the correct format, read into number
+  // buffer, convert to int and return the path_len
+  if (path_len_from_server[0] == 'N' && path_len_from_server[1] == ' '){
     for (int i; i < buf_len-2; ++i){
-      number[i] = buf[i+2];
+      number[i] = path_len_from_server[i+2];
     }
     path_len = string_get_int(number);
   }
+  // If path_len_from_server is not the correct format, return -1 (ERROR)
   else{
     dprintf("Server Response Format Incorrect: Start a new request.");
+    return -1;
   }
 
   // now you will expect to get a N dddddd message back from server
@@ -102,7 +108,7 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
     char str_lon[12];
     uint16_t bytes;
     uint16_t buf_len = 100;
-    char waypoint [buf_len];
+    char waypoint_from_server [buf_len];
     char* sep = " ";
 
     dprintf("Fetching %d way points, keeping at most %d",
@@ -113,21 +119,13 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
       return -1;
     }
 
-    // WARNING - server uses lat lon order, client uses lon lat !
-    // for (int16_t i=0; i < path_len; ++i) {
-    //     lon = i;
-    //     lat = i;
-    //     dprintf("Got %d |%s|", lat, lon);
-    //
-    //     if ( i < max_path_len ) {
-    //         // skip if too many points
-    //         waypoints[i] = LonLat32(lon, lat);
-    //         }
-    //     }
     int start_time;
+
     for(int16_t i = 0; i <= path_len; ++i){
+      // Request waypoint transmission with "A"
       Serial.print("A"); Serial.println("");
 
+      //Check for timeout when requesting waypoint from the server. (ERROR)
       start_time = millis();
       while (Serial.available() == 0){
         // dprintf("no reply from server");
@@ -137,21 +135,28 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
         return -1;
       }
 
-      bytes = serial_readline(waypoint, buf_len);
-      index = 2;
+      // Fill waypoint buffer with the waypoint line.
+      bytes = serial_readline(waypoint_from_server, buf_len);
+      // if the waypoint buffer has the correct format, set index to 2,
+      // read the lat into str_lat, and the lon into str_long
+      // as strings and then convert them to ints and store them in the
+      // waypoints LonLat32 structure.
+      if (waypoint_from_server[0] == 'W' && waypoint_from_server[1] == ' '){
 
-      if (waypoint[0] == 'W' && waypoint[1] == ' '){
-        index = string_read_field(waypoint, index, str_lat, bytes, sep);
-        index = string_read_field(waypoint, index, str_lon, bytes, sep);
+        index = 2;
+        index = string_read_field(waypoint_from_server, index, str_lat, bytes, sep);
+        index = string_read_field(waypoint_from_server, index, str_lon, bytes, sep);
         waypoints[i] = LonLat32(string_get_int(str_lon), string_get_int(str_lat));
       }
-
-      else if (waypoint[0] == 'E'){
+      // If waypoint_from_server is the character 'E', know that it is the end
+      // of the waypoints to be sent
+      else if (waypoint_from_server[0] == 'E'){
         dprintf("End of waypoints");
       }
-
+      // Else, incorrect waypoint format, return -1 (ERROR)
       else {
         dprintf("Incorrect Waypoint or Endpoint Format from Server: Start a new request.");
+        return -1;
       }
     }
     return 0;
