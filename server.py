@@ -293,13 +293,13 @@ def protocol(serial_in, serial_out):
         instr_num = 0
         send_msg_to_client(serial_out, "N {}" .format(count))
         while instr_num != count:
-            msg = receive_msg_from_client(serial_in)
             #while arduino has not responded to waypoint with proper query
-            #@TODO: Consider taking this out and assuming proper format
-            #from the arduino
-            while msg != "A":
+
+            while msg[0] != "A":
                 msg = receive_msg_from_client(serial_in)
+
             #print the waypoint
+            log_msg("Recieved 'A'")
             send_msg_to_client(serial_out, "W {} {}"\
             .format(lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1]))
             #increment the counter

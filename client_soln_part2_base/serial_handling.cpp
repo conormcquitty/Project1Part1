@@ -30,7 +30,6 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   int16_t path_len;
   int16_t buf_size = 100;
   char buf[buf_size];
-  char number[buf_size];
   uint16_t buf_len;
 
   // start the server communication with a path request
@@ -46,9 +45,8 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   while (Serial.available() == 0){;}
 
   buf_len = serial_readline(buf, 100);
-  dprintf("buf len: %d", buf_len);
+  char number[buf_len-2];
   if (buf[0] == 'N' && buf [1] == ' '){
-    dprintf("buffer requirements met");
     for (int i; i < buf_len-2; ++i){
       number[i] = buf[i+2];
     }
@@ -90,6 +88,11 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
     uint16_t index;
     int32_t lat;
     int32_t lon;
+    char str_lat[12];
+    char str_lon[12];
+    uint16_t bytes;
+    uint16_t buf_len = 100;
+    char waypoint [buf_len];
     char* sep = " ";
 
     dprintf("Fetching %d way points, keeping at most %d",
@@ -112,21 +115,21 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
     //         }
     //     }
 
-    uint16_t num_bytes, index_lat, index_lon;
     for(int16_t i = 0; i < path_len; ++i){
-      char* string = itoa(Serial.read(), string, 2);
-      char* str_lat;
-      char* str_lon;
-      uint16_t index = 0;
-
-      if (string[0] == 'W'){
-        num_bytes = serial_readline(string, 100);
-        index = string_read_field(string, index, str_lat, num_bytes, sep);
-        index= string_read_field(string, index, str_lon, num_bytes, sep);
-        waypoints[i] = LonLat32(string_get_int(str_lon), string_get_int(str_lon));
+      Serial.print("A"); Serial.println("");
+      while (Serial.available() == 0){
+        // dprintf("no reply from server");
       }
 
-      else if (&string[0] == "E"){
+      bytes = serial_readline(waypoint, buf_len);
+      index = 2;
+      if (waypoint[0] == 'W' && waypoint[1] == ' '){
+        index = string_read_field(waypoint, index, str_lat, bytes, sep);
+        index = string_read_field(waypoint, index, str_lon, bytes, sep);
+        waypoints[i] = LonLat32(string_get_int(str_lon), string_get_int(str_lat));
+      }
+
+      else if (waypoint[0] == 'E'){
         dprintf("End of waypoints");
       }
     }
