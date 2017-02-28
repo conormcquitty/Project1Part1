@@ -221,7 +221,7 @@ def least_cost_path (graph, start, dest, cost):
     #return the reversed path so it goes (start->dest)
     return list(reversed(path))
 
-def find_vertice(graph, lat, lon):
+def find_vertice(graph, lat, lon, cost):
     """Finds and returns the cloesest vertices to the given latitude and longitude
     Args:
         lat: latitude expressed as an integer in 100-000ths
@@ -238,16 +238,23 @@ def find_vertice(graph, lat, lon):
     #Add a vertice to lat_lon so cost_distance can be reused to calculate
     #Euclidean distance give to vertices. 0 is an arbitrary value
     lat_lon[0]= (lat, lon)
-    heap = MinHeap()
-    #Add to the minheap sorting on the cost_distance between vertices.
-    #The vertice is the value associated with the cost_distance in the
-    #minheap
+    #set the closest_v to a starting value
+    closest_v = 0
+    #calculate cost for all the vertices
     for v in lat_lon.keys():
-        if v != 0:
-            heap.add(cost_distance(0, v), v)
-    #pop the minimum Euclidean distance and return only the vertice
-    #associated with the value
-    return heap.pop_min()[1]
+        #if its the first iteration, intialize least cost to be
+        #the value of the cost of the first vertice in lat_lon
+        if closest_v == 0:
+            least_cost = cost(0, v)
+
+        #if v is not the added vertice, and the cost of the current vertice is
+        #less than the previous least_cost, update the closest_v
+        #to the current v
+        if v!=0 and cost(0, v) <= least_cost:
+            least_cost = cost(0,v)
+            closest_v = v
+            
+    return closest_v
 
 
 def protocol(serial_in, serial_out):
@@ -282,8 +289,8 @@ def protocol(serial_in, serial_out):
         d_lat, d_lon = int(coords[2]), int(coords[3])
         # log_msg(" {} {} {} {}". format(s_lat, s_lon, d_lat, d_lon))
         #find the closest start and destination vertices
-        start = find_vertice(graph, s_lat, s_lon)
-        end = find_vertice(graph, d_lat, d_lon)
+        start = find_vertice(graph, s_lat, s_lon, cost)
+        end = find_vertice(graph, d_lat, d_lon, cost)
         #find the shortest path
         path = least_cost_path(graph, start, end, cost)
         # print("PATH: ", path)
