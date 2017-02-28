@@ -125,15 +125,13 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
     //         }
     //     }
     int start_time;
-    for(int16_t i = 0; i < path_len; ++i){
+    for(int16_t i = 0; i <= path_len; ++i){
       Serial.print("A"); Serial.println("");
 
       start_time = millis();
-
       while (Serial.available() == 0){
         // dprintf("no reply from server");
       }
-
       if (start_time + 1000 < millis()){
         dprintf("WAITING FOR WAYPOINT TIMEOUT.");
         return -1;

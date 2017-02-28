@@ -253,7 +253,7 @@ def find_vertice(graph, lat, lon, cost):
         if v!=0 and cost(0, v) <= least_cost:
             least_cost = cost(0,v)
             closest_v = v
-            
+
     return closest_v
 
 
@@ -299,22 +299,23 @@ def protocol(serial_in, serial_out):
         #start instruction counter
         instr_num = 0
         send_msg_to_client(serial_out, "N {}" .format(count))
-        while instr_num != count:
+        while instr_num < count:
             #while arduino has not responded to waypoint with proper query
-
-            while msg[0] != "A":
-                msg = receive_msg_from_client(serial_in)
+            msg = receive_msg_from_client(serial_in)
+            if msg.strip() != "A":
+                continue
 
             #print the waypoint
-            log_msg("Recieved 'A'")
             send_msg_to_client(serial_out, "W {} {}"\
             .format(lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1]))
             #increment the counter
             instr_num += 1
         #@BUG: This algorithm design makes it print 'E' even when there is
         #no path to be found
-        if receive_msg_from_client(serial_in) == 'A':
+        msg = receive_msg_from_client(serial_in)
+        if msg.strip() == 'A':
             send_msg_to_client(serial_out, "E")
+
 
 
 
