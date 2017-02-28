@@ -42,7 +42,14 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   Serial.print(end.lat); Serial.print(" ");
   Serial.print(end.lon), Serial.println("");
 
+  int start_time = millis();
+
   while (Serial.available() == 0){;}
+
+  if (start_time + 10000 < millis()){
+    dprintf("WAITING FOR PATH TIMEOUT");
+    return -1;
+  }
 
   buf_len = serial_readline(buf, 100);
   char number[buf_len-2];
@@ -51,6 +58,9 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
       number[i] = buf[i+2];
     }
     path_len = string_get_int(number);
+  }
+  else{
+    dprintf("Server Response Format Incorrect: Start a new request.");
   }
 
   // now you will expect to get a N dddddd message back from server
@@ -114,15 +124,24 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
     //         waypoints[i] = LonLat32(lon, lat);
     //         }
     //     }
-
+    int start_time;
     for(int16_t i = 0; i < path_len; ++i){
       Serial.print("A"); Serial.println("");
+
+      start_time = millis();
+
       while (Serial.available() == 0){
         // dprintf("no reply from server");
       }
 
+      if (start_time + 1000 < millis()){
+        dprintf("WAITING FOR WAYPOINT TIMEOUT.");
+        return -1;
+      }
+
       bytes = serial_readline(waypoint, buf_len);
       index = 2;
+
       if (waypoint[0] == 'W' && waypoint[1] == ' '){
         index = string_read_field(waypoint, index, str_lat, bytes, sep);
         index = string_read_field(waypoint, index, str_lon, bytes, sep);
@@ -131,6 +150,10 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
 
       else if (waypoint[0] == 'E'){
         dprintf("End of waypoints");
+      }
+
+      else {
+        dprintf("Incorrect Waypoint or Endpoint Format from Server: Start a new request.");
       }
     }
     return 0;
