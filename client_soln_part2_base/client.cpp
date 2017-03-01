@@ -390,11 +390,12 @@ void loop() {
                 are then mapped into screen locations, and draw them if
                 they are visible.
             */
-            for (int i = 1; i < current_path_len; i++){
-              tft.drawLine(longitude_to_x(current_map_num, waypoints[i-1].lon)-screen_map_y,
-                            latitude_to_y(current_map_num, waypoints[i-1].lat)-screen_map_x,
-                            longitude_to_x(current_map_num,waypoints[i].lon)-screen_map_y,
-                            latitude_to_y(current_map_num, waypoints[i].lat)-screen_map_x,
+            dprintf("current_map_num: %d", current_map_num);
+            for (int i = 1; i < cur_path_len; i++){
+              tft.drawLine(longitude_to_x(current_map_num, waypoints[i-1].lon)-screen_map_x,
+                            latitude_to_y(current_map_num, waypoints[i-1].lat)-screen_map_y,
+                            longitude_to_x(current_map_num,waypoints[i].lon)-screen_map_x,
+                            latitude_to_y(current_map_num, waypoints[i].lat)-screen_map_y,
                             0x001F);
               }
             }

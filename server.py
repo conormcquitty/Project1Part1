@@ -272,6 +272,7 @@ def protocol(serial_in, serial_out):
     #Take input from Arduino through the serialPort
     #and using cs_message
     while True:
+        log_msg("Waiting for request from client")
         while True:
             msg = receive_msg_from_client(serial_in)
             if msg[0] == "R":
@@ -298,6 +299,8 @@ def protocol(serial_in, serial_out):
         #start instruction counter
         instr_num = 0
         send_msg_to_client(serial_out, "N {}" .format(count))
+        if count == 0:
+            continue
         while instr_num < count:
             #while arduino has not responded to waypoint with proper query
             msg = receive_msg_from_client(serial_in)
