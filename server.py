@@ -302,17 +302,15 @@ def protocol(serial_in, serial_out):
             #while arduino has not responded to waypoint with proper query
             msg = receive_msg_from_client(serial_in)
             if msg.strip() != "A":
-                continue
+                break
 
             #print the waypoint
             send_msg_to_client(serial_out, "W {} {}"\
             .format(lat_lon[path[instr_num]][0], lat_lon[path[instr_num]][1]))
             #increment the counter
             instr_num += 1
-        #@BUG: This algorithm design makes it print 'E' even when there is
-        #no path to be found
         msg = receive_msg_from_client(serial_in)
-        if msg.strip() == 'A':
+        if msg.strip() == "A":
             send_msg_to_client(serial_out, "E")
 
 
