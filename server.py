@@ -240,7 +240,6 @@ def find_vertice(graph, lat, lon, cost):
     lat_lon[0]= (lat, lon)
     #set the closest_v to a starting value
     closest_v = 0
-    #calculate cost for all the vertices
     for v in lat_lon.keys():
         #if its the first iteration, intialize least cost to be
         #the value of the cost of the first vertice in lat_lon

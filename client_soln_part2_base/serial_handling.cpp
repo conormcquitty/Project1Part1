@@ -44,9 +44,12 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   Serial.print(end.lon), Serial.println("");
 
   //Check for timeout on recieving path from the server.(ERROR)
-  int start_time = millis();
+  long start_time = millis();
+  dprintf("%d", start_time);
+
   while (Serial.available() == 0){;}
   if (start_time + 10000 < millis()){
+    dprintf("%d", start_time + 10000);
     dprintf("WAITING FOR PATH TIMEOUT");
     return -1;
   }
