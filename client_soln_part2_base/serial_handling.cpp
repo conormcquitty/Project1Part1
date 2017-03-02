@@ -135,7 +135,6 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
             dprintf("%d", millis()- start_time);
             dprintf("WAITING FOR WAYPOINT TIMEOUT.");
             Serial.print("TIMEOUT: Server Reset");
-            Serial.print("TIMEOUT: Server Reset");
             return -1;
           }
       }

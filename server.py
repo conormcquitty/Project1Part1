@@ -275,7 +275,6 @@ def protocol(serial_in, serial_out):
         log_msg("Waiting for request from client")
         while True:
             msg = receive_msg_from_client(serial_in)
-            log_msg("Message Recieved: {}".format(msg))
             if msg[0] == "R":
                 break
         #Break the coordinates into their own list
