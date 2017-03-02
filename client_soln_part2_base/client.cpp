@@ -362,13 +362,13 @@ void loop() {
                         YOUR TASK: This is a place holder for the code you need
                         to write. This simply generates a diagnostic message.
                     */
-                    dprintf("Waypoints (lat, lon):");
-                    for (int16_t i=0; i < cur_path_len; i++) {
-                        dprintf("%d: %ld %ld",
-                            i, waypoints[i].lat, waypoints[i].lon);
                         }
+                        // dprintf("Waypoints (lat, lon):");
+                        // for (int16_t i=0; i < cur_path_len; i++) {
+                        //     dprintf("%d: %ld %ld",
+                        //         i, waypoints[i].lat, waypoints[i].lon);
 
-                    }
+                    // }
                 }
             }  // end request path
         } // end of select_button_event processing

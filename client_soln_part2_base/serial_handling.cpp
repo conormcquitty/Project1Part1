@@ -31,7 +31,8 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   int16_t buf_size = 100;
   char path_len_from_server[buf_size];
   uint16_t buf_len;
-
+  bool msgflag;
+  bool timeflag;
   // start the server communication with a path request
   dprintf("Requesting lat %ld lon %ld to lat %ld lon %ld",
   start.lat, start.lon, end.lat, end.lon);
@@ -44,13 +45,14 @@ int16_t srv_get_pathlen(LonLat32 start, LonLat32 end) {
   Serial.print(end.lon), Serial.println("");
 
   //Check for timeout on recieving path from the server.(ERROR)
-  long start_time = millis();
-
-  while (Serial.available() == 0){;}
-  if (start_time + 10000 < millis()){
-    dprintf("WAITING FOR PATH TIMEOUT");
-    return -1;
+  uint32_t start_time = millis();
+  while (Serial.available() == 0){
+      if (millis() - start_time > 10000){
+        dprintf("WAITING FOR PATH TIMEOUT.");
+        return -1;
+      }
   }
+
 
   // Read into buffer path_len_from_server
   buf_len = serial_readline(path_len_from_server, 100);
@@ -120,7 +122,7 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
       return -1;
     }
 
-    int start_time;
+    uint32_t start_time;
 
     for(int16_t i = 0; i <= path_len; ++i){
       // Request waypoint transmission with "A"
@@ -129,12 +131,16 @@ int16_t srv_get_waypoints(LonLat32* waypoints,
       //Check for timeout when requesting waypoint from the server. (ERROR)
       start_time = millis();
       while (Serial.available() == 0){
-        // dprintf("no reply from server");
+          if (millis() - start_time > 1000){
+            dprintf("%d", millis()- start_time);
+            dprintf("WAITING FOR WAYPOINT TIMEOUT.");
+            Serial.print("TIMEOUT: Server Reset");
+            Serial.print("TIMEOUT: Server Reset");
+            return -1;
+          }
       }
-      if (start_time + 1000 < millis()){
-        dprintf("WAITING FOR WAYPOINT TIMEOUT.");
-        return -1;
-      }
+      // dprintf("time: %d", millis() - start_time);
+
 
       // Fill waypoint buffer with the waypoint line.
       bytes = serial_readline(waypoint_from_server, buf_len);
